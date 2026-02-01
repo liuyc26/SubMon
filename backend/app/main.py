@@ -1,10 +1,9 @@
 import uvicorn
-from typing import Annotated
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-from app.models import Target, TargetCreate, TargetUpdate
-from app.database import create_db_and_tables, engine
+
+from app.database import create_db_and_tables
+from app.api import targets
 
 
 app = FastAPI()
@@ -29,62 +28,7 @@ def health_check() -> dict:
     return {"status": "ok"}
 
 
-# targets endpoints
-@app.get("/api/v1/targets/")
-async def read_targets(
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100
-) -> list[Target]:
-    with Session(engine) as session:
-        targets = session.exec(select(Target).offset(offset).limit(limit)).all()
-    return targets
-
-
-@app.post("/api/v1/targets/")
-async def create_target(new_target: TargetCreate) -> Target:
-    target = Target(name=new_target.name, url=new_target.url)
-    with Session(engine) as session:
-        session.add(target)
-        session.commit()
-        session.refresh(target)
-        return target
-
-
-@app.get("/api/v1/targets/{target_id}")
-async def read_target(target_id: int) -> Target:
-    with Session(engine) as session:
-        target = session.get(Target, target_id)
-        if not target:
-            raise HTTPException(status_code=404, detail="Target not found")
-        return target
-
-
-@app.patch("/api/v1/targets/{target_id}")
-async def update_targets(target_id: int, new_target: TargetUpdate) -> Target:
-    with Session(engine) as session:
-        target = session.get(Target, target_id)
-        if not target:
-            raise HTTPException(status_code=404, detail="Target not found")
-        print("Target:", target)
-        if new_target.name:
-            target.name = new_target.name
-        if new_target.url:
-            target.url = new_target.url
-        session.add(target)
-        session.commit()
-        session.refresh(target)
-        return target
-
-
-@app.delete("/api/v1/targets/{target_id}")
-async def delete_target(target_id: int):
-    with Session(engine) as session:
-        target = session.get(Target, target_id)
-        if not target:
-            raise HTTPException(status_code=404, detail="Target not found")
-        session.delete(target)
-        session.commit()
-        return {"ok": True}
+app.include_router(targets.router)
 
 
 # TODO: build domains endpoints
