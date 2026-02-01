@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api.js";
 import AddTargetForm from "./AddTargetForm.jsx";
 
@@ -10,6 +11,8 @@ const TargetList = () => {
     const [editUrl, setEditUrl] = useState("");
     const [savingId, setSavingId] = useState(null);
     const [editError, setEditError] = useState(null);
+
+    const navigate = useNavigate();
 
     const fetchTargets = async () => {
         try {
@@ -88,7 +91,7 @@ const TargetList = () => {
                             </>
                         ) : (
                             <>
-                                <span style={{ flex: 1 }}>{target.name} - {target.url}</span>
+                                <span style={{ flex: 1, cursor: 'pointer' }} onClick={() => navigate(`/${encodeURIComponent(target.name)}`, { state: { id: target.id } })}>{target.name} - {target.url}</span>
                                 <button onClick={() => { setEditingId(target.id); setEditName(target.name); setEditUrl(target.url); setEditError(null); }}>Edit</button>
                                 <button onClick={() => deleteTarget(target.id)} disabled={!target.id || deletingId === target.id}>{deletingId === target.id ? 'Deleting...' : 'Delete'}</button>
                             </>
