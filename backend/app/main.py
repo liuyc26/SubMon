@@ -23,7 +23,7 @@ app.add_middleware(
 
 
 # health check endpoint
-@app.get("/api/v1/health")
+@app.get("/health")
 def health_check() -> dict:
     return {"status": "ok"}
 
