@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import create_db_and_tables
-from app.api import targets
+from app.api import targets, subdomains
 
 
 app = FastAPI()
@@ -23,15 +23,15 @@ app.add_middleware(
 
 
 # health check endpoint
-@app.get("/api/v1/health")
+@app.get("/health")
 def health_check() -> dict:
     return {"status": "ok"}
 
 
 app.include_router(targets.router)
+app.include_router(subdomains.router)
 
 
-# TODO: build domains endpoints
 # TODO: build scans endpoints
 # TODO: build alerts endpoints
 # TODO: build auth endpoints
