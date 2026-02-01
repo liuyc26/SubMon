@@ -208,3 +208,6 @@ __marimo__/
 
 # Database
 *.db
+
+# what is this
+.mypy_cache/
