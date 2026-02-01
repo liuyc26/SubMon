@@ -18,7 +18,7 @@ async def read_targets(
 ) -> list[Target]:
     with Session(engine) as session:
         targets = session.exec(select(Target).offset(offset).limit(limit)).all()
-    return targets
+    return list(targets)
 
 
 @router.get("/{target_id}")
