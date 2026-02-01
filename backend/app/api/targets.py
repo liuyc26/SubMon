@@ -2,38 +2,42 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import Session, select
 
-from app.models import Target, TargetCreate, TargetUpdate
+from app.models import Target, TargetCreate, TargetUpdate, Subdomain
 from app.database import engine
 
 router = APIRouter(
     prefix="/api/v1/targets",
-    tags=["targets"]
+    tags=["Targets"]
 )
 
 
 @router.get("/")
-async def read_targets(
+async def read_all_targets(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100
 ) -> list[Target]:
     with Session(engine) as session:
         targets = session.exec(select(Target).offset(offset).limit(limit)).all()
-    return list(targets)
+        return list(targets)
 
 
 @router.get("/{target_id}")
-async def read_target(target_id: int) -> Target:
+async def read_target(target_id: int) -> dict[str, Target | list[Subdomain]]:
     with Session(engine) as session:
         target = session.get(Target, target_id)
         if not target:
             raise HTTPException(status_code=404, detail="Target not found")
-        return target
+        subdomains = session.exec(select(Subdomain).where(Subdomain.target_id == target_id)).all()
+        return {"target": target, "subdomains": list(subdomains)}
 
 
 @router.post("/")
 async def create_target(new_target: TargetCreate) -> Target:
-    target = Target(name=new_target.name, url=new_target.url)
     with Session(engine) as session:
+        target = Target(
+            name=new_target.name, 
+            url=str(new_target.url)
+        )
         session.add(target)
         session.commit()
         session.refresh(target)
@@ -41,12 +45,11 @@ async def create_target(new_target: TargetCreate) -> Target:
     
 
 @router.patch("/{target_id}")
-async def update_targets(target_id: int, new_target: TargetUpdate) -> Target:
+async def update_target(target_id: int, new_target: TargetUpdate) -> Target:
     with Session(engine) as session:
         target = session.get(Target, target_id)
         if not target:
             raise HTTPException(status_code=404, detail="Target not found")
-        print("Target:", target)
         if new_target.name:
             target.name = new_target.name
         if new_target.url:
