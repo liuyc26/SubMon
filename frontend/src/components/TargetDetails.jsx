@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api.js';
+import SubdomainForm from './SubdomainForm.jsx';
 
 const TargetDetails = () => {
   const { targetName } = useParams();
@@ -12,12 +13,6 @@ const TargetDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Create form state
-  const [newUrl, setNewUrl] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [newStatus, setNewStatus] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState(null);
 
   // Edit state
   const [editingId, setEditingId] = useState(null);
@@ -83,44 +78,19 @@ const TargetDetails = () => {
   const targetId = target?.id || location.state?.id;
 
   const clearMessages = () => {
-    setCreateError(null);
     setEditError(null);
     setDeleteError(null);
     setSuccess(null);
   };
 
   useEffect(() => {
-    if (createError || editError || deleteError || success) {
+    if (editError || deleteError || success) {
       const t = setTimeout(() => clearMessages(), 5000);
       return () => clearTimeout(t);
     }
-  }, [createError, editError, deleteError, success]);
+  }, [editError, deleteError, success]);
 
-  const createSubdomain = async () => {
-    if (!targetId) return setCreateError('Missing target id');
-    if (!newUrl.trim()) return setCreateError('URL is required');
-    if (!isValidUrl(newUrl.trim())) return setCreateError('Invalid URL (include http:// or https://)');
-    setCreateError(null);
-    setCreating(true);
-    try {
-      const resp = await api.post(`/api/v1/targets/${targetId}/subdomains`, {
-        url: newUrl.trim(),
-        // ensure non-null values so backend DB NOT NULL constraints aren't violated
-        title: newTitle.trim() || "",
-        status: newStatus.trim() || "",
-      });
-      setSubdomains((prev) => [...prev, resp.data]);
-      setNewUrl('');
-      setNewTitle('');
-      setNewStatus('');
-      setSuccess('Subdomain created');
-    } catch (err) {
-      console.error('Error creating subdomain', err);
-      setCreateError(err?.response?.data?.detail || err.message || 'Failed to create');
-    } finally {
-      setCreating(false);
-    }
-  };
+
 
   const startEdit = (s) => {
     setEditingId(s.id);
@@ -197,16 +167,7 @@ const TargetDetails = () => {
 
           {success && <div style={{ color: 'green', marginBottom: 8 }}>{success}</div>}
 
-          <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 12 }}>
-            <h4>Create subdomain</h4>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <input placeholder="URL" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} style={{ flex: 1 }} />
-              <input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-              <input placeholder="Status" value={newStatus} onChange={(e) => setNewStatus(e.target.value)} />
-              <button onClick={createSubdomain} disabled={creating || loading || !targetId}>{creating ? 'Creating...' : 'Create'}</button>
-            </div>
-            {createError && <div style={{ color: 'red' }}>{createError}</div>}
-          </div>
+          <SubdomainForm targetId={targetId} onCreated={(s) => { setSubdomains((prev) => [...prev, s]); }} />
 
           {subdomains.length === 0 ? (
             <div>No subdomains found.</div>
