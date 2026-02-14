@@ -70,6 +70,7 @@ async def delete_target(target_id: int):
         session.commit()
         return {"ok": True}
 
+
 # Enqueue Scan
 @router.post("/{target_id}/scan")
 async def enqueue_scan(target_id: int):

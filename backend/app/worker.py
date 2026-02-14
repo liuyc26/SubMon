@@ -2,6 +2,7 @@ from sqlmodel import Session, select
 
 from app.models import ScanRun
 from app.database import engine
+
 from .scanner import run_scan
 
 def get_next_in_queue() -> ScanRun | None:
