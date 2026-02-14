@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import Session, select
 
-from app.models import Target, TargetCreate, TargetUpdate, Subdomain
+from app.models import Target, TargetCreate, TargetUpdate, Subdomain, ScanRun
 from app.database import engine
 
 router = APIRouter(
@@ -69,3 +69,15 @@ async def delete_target(target_id: int):
         session.delete(target)
         session.commit()
         return {"ok": True}
+
+# Enqueue Scan
+@router.post("/{target_id}/scan")
+async def enqueue_scan(target_id: int):
+    with Session(engine) as session:
+        scan_target = ScanRun(
+            target_id=target_id,
+            status='queued'
+        )
+        session.add(scan_target)
+        session.commit()
+        return {"scan_run_id": scan_target.id}
