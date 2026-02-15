@@ -1,6 +1,7 @@
 from pydantic import HttpUrl
 from sqlmodel import Field, SQLModel
 from typing import Optional
+from datetime import datetime, timezone
 
 
 class Target(SQLModel, table=True):
@@ -33,3 +34,10 @@ class SubdomainUpdate(SQLModel):
     url: Optional[HttpUrl] = None
     title: Optional[str] = None
     status: Optional[str] = None
+
+
+class ScanRun(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    target_id: int
+    status: str = 'queued' # queued/running/success/failed
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -11,6 +11,8 @@
 ```sh
 cd backend
 python -m app.main
+# run worker in a new terminal
+python -m app.worker
 
 # Swagger doc
 http://localhost:8000/docs
@@ -27,7 +29,22 @@ cd frontend
 npm run dev
 ```
 
-## Version #1 (02/01/2026)
+### Scanning Tools
+- [subfinder](https://github.com/projectdiscovery/subfinder)
+- [dnsx](https://github.com/projectdiscovery/dnsx)
+- [httpx](https://github.com/projectdiscovery/httpx)
+
+## Versions 
+
+Version #2 (Feb 14th, 2026)
+
+Dashboard main page.
+![main](/img/v2_main.png)
+
+Target page with more details.
+![target](/img/v2_target.png)
+
+Version #1 (Feb 1st, 2026)
 Main page where you can add your favorite targets.
 ![main](/img/v1_main.png)
 
@@ -36,4 +53,4 @@ Target page where you can add subdomains.
 
 ## TBD
 
-Of course, this is an automation tool. I will build the scanning part soon.
+Add scheduler

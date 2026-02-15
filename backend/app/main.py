@@ -32,10 +32,6 @@ app.include_router(targets.router)
 app.include_router(subdomains.router)
 
 
-# TODO: build scans endpoints
-# TODO: build alerts endpoints
-# TODO: build auth endpoints
-
 if __name__ == "__main__":
     create_db_and_tables()
     uvicorn.run(app, host="0.0.0.0", port=8000)

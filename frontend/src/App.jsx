@@ -6,12 +6,20 @@ import TargetDetails from './components/TargetDetails'
 
 function App() {
   return (
-    <div className='App'>
+    <div className='dashboard-shell'>
       <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<TargetList />}/>
-          <Route path='/:targetName' element={<TargetDetails />}/>
-        </Routes>
+        <header className='dashboard-header'>
+          <div>
+            <h1>SubMon Dashboard</h1>
+            <p>Track targets and monitor discovered subdomains.</p>
+          </div>
+        </header>
+        <main className='dashboard-content'>
+          <Routes>
+            <Route path='/' element={<TargetList />}/>
+            <Route path='/:targetName' element={<TargetDetails />}/>
+          </Routes>
+        </main>
       </BrowserRouter>
     </div>
   )
