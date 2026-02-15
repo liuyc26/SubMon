@@ -211,3 +211,6 @@ __marimo__/
 
 # what is this
 .mypy_cache/
+
+# secrets
+config.py
