@@ -109,10 +109,10 @@ def diff_subdomains(target_id: int, valid_subdomains: set[str]):
 
 
 def run_scan(target_id: int) -> bool:
-    print(f"[+] Scan target {target_id}.")
     try:
         # Get target domain
         domain: str = get_domain(target_id=target_id)
+        print(f"[+] Start scanning {domain}...")
         # Finding subdomains
         subdomains: set = run_subfinder(domain=domain)
         # dns filter
