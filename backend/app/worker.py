@@ -24,6 +24,7 @@ def mark_scan_run_status(scan_run_id: int, status: str) -> None:
         session.commit()
 
 def worker_loop():
+    # TODO: infinite while loop
     # Finding the next target in queue
     next_target = get_next_in_queue()
     # Start scanning
