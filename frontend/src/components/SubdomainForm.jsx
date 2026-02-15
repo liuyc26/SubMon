@@ -20,7 +20,7 @@ const SubdomainForm = ({ targetId, onCreated }) => {
     try {
       const u = new URL(str);
       return u.protocol === 'http:' || u.protocol === 'https:';
-    } catch (_) {
+    } catch {
       return false;
     }
   };
@@ -51,16 +51,19 @@ const SubdomainForm = ({ targetId, onCreated }) => {
   };
 
   return (
-    <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 12 }}>
-      <h4>Create subdomain</h4>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} style={{ flex: 1 }} />
+    <div className="dashboard-card" style={{ marginBottom: 12 }}>
+      <h2>Create Subdomain</h2>
+      <p className="dashboard-subtle" style={{ margin: '6px 0 12px' }}>
+        Add discovered hosts manually or record external findings.
+      </p>
+      <div className="form-row">
+        <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} style={{ flex: 1, minWidth: 220 }} />
         <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <input placeholder="Status" value={status} onChange={(e) => setStatus(e.target.value)} />
-        <button onClick={handleCreate} disabled={creating || !targetId}>{creating ? 'Creating...' : 'Create'}</button>
+        <button className="btn btn-primary" onClick={handleCreate} disabled={creating || !targetId}>{creating ? 'Creating...' : 'Create'}</button>
       </div>
-      {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-      {success && <div style={{ color: 'green', marginTop: 8 }}>{success}</div>}
+      {error && <div className="status-text status-error">{error}</div>}
+      {success && <div className="status-text status-success">{success}</div>}
     </div>
   );
 };

@@ -12,7 +12,7 @@ const AddTargetForm = ({ onAdd }) => {
         try {
             const u = new URL(str);
             return u.protocol === 'http:' || u.protocol === 'https:';
-        } catch (_) {
+        } catch {
             return false;
         }
     };
@@ -53,26 +53,28 @@ const AddTargetForm = ({ onAdd }) => {
     };
 
     return (
-        <div style={{ border: '1px solid #ddd', padding: 12, marginBottom: 12 }}>
-            <h4>Create target</h4>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="dashboard-card">
+            <h2>Create Target</h2>
+            <p className="dashboard-subtle" style={{ margin: '6px 0 12px' }}>Add a new monitoring target with a name and root URL.</p>
+            <form onSubmit={handleSubmit} className="form-row">
                 <input
                     name="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Target Name"
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, minWidth: 180 }}
                 />
                 <input
                     name="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com"
+                    style={{ flex: 1, minWidth: 200 }}
                 />
-                <button type="submit" disabled={loading}>{loading ? "Adding..." : "Add"}</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? "Adding..." : "Add Target"}</button>
             </form>
-            {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
-            {success && <div style={{ color: "green", marginTop: 8 }}>{success}</div>}
+            {error && <div className="status-text status-error">{error}</div>}
+            {success && <div className="status-text status-success">{success}</div>}
         </div>
     );
 };
