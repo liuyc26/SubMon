@@ -70,6 +70,11 @@ async def delete_target(target_id: int):
         target = session.get(Target, target_id)
         if not target:
             raise HTTPException(status_code=404, detail="Target not found")
+        subdomains = session.exec(
+            select(Subdomain).where(Subdomain.target_id == target_id)
+        ).all()
+        for subdomain in subdomains:
+            session.delete(subdomain)
         session.delete(target)
         session.commit()
         return {"ok": True}
