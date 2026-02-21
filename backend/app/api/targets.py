@@ -27,7 +27,11 @@ async def read_target(target_id: int) -> dict[str, Target | list[Subdomain]]:
         target = session.get(Target, target_id)
         if not target:
             raise HTTPException(status_code=404, detail="Target not found")
-        subdomains = session.exec(select(Subdomain).where(Subdomain.target_id == target_id)).all()
+        subdomains = session.exec(
+            select(Subdomain)
+            .where(Subdomain.target_id == target_id)
+            .order_by(Subdomain.id.desc())
+        ).all()
         return {"target": target, "subdomains": list(subdomains)}
 
 
