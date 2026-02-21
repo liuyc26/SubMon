@@ -1,3 +1,4 @@
+import json
 import subprocess
 
 from fastapi import HTTPException
@@ -25,13 +26,13 @@ def get_subdomains(target_id: int) -> set[str]:
         return {subdomain.url for subdomain in subdomains}
 
 
-def handle_new_subdomains(target_id: int, subdomains: set[str]) -> None:
+def handle_new_subdomains(target_id: int, subdomains: set[str], titles: dict[str, str]) -> None:
     print("[+] Insert new subdomains into the database.")
     if not subdomains:
         return
     with Session(engine) as session:
         session.add_all(
-            [Subdomain(url=url, title="", status="alive", target_id=target_id)
+            [Subdomain(url=url, title=titles.get(url, ""), status="alive", target_id=target_id)
              for url in subdomains]
         )
         session.commit()
@@ -81,10 +82,10 @@ def run_dns_filter(subdomains: set[str]) -> set[str]:
     return result
 
 
-def run_http_probe(active_subdomains: set[str]) -> set[str]:
+def run_http_probe(active_subdomains: set[str]) -> tuple[set[str], dict[str, str]]:
     print("[+] Run httpx...")
     proc = subprocess.run(
-        ["httpx", "-silent"],
+        ["httpx", "-silent", "-json", "-title"],
         input="\n".join(active_subdomains),
         text=True,
         capture_output=True,
@@ -92,9 +93,25 @@ def run_http_probe(active_subdomains: set[str]) -> set[str]:
     )
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr)
-    result = set(proc.stdout.splitlines())
-    print(f"-> Found {len(result)} live websites.")
-    return result
+    live_urls: set[str] = set()
+    titles: dict[str, str] = {}
+
+    for line in proc.stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        url = row.get("url")
+        if not url:
+            continue
+        live_urls.add(url)
+        title = row.get("title") or ""
+        titles[url] = title
+
+    print(f"-> Found {len(live_urls)} live websites.")
+    return live_urls, titles
 
 
 def diff_subdomains(target_id: int, valid_subdomains: set[str]):
@@ -118,12 +135,12 @@ def run_scan(target_id: int) -> bool:
         # dns filter
         active_subdomains: set = run_dns_filter(subdomains=subdomains)
         # http probe
-        valid_subdomains: set = run_http_probe(
+        valid_subdomains, titles = run_http_probe(
             active_subdomains=active_subdomains)
         # diff
         new, _, missing = diff_subdomains(
             target_id=target_id, valid_subdomains=valid_subdomains)
-        handle_new_subdomains(target_id=target_id, subdomains=new)
+        handle_new_subdomains(target_id=target_id, subdomains=new, titles=titles)
         handle_missing_subdomains(target_id=target_id, subdomains=missing)
         send_discord_alert(webhook_url=discord_webhook_url, data=new)
         return True
