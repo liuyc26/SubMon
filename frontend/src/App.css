@@ -13,9 +13,13 @@
   padding: 22px;
   border: 1px solid var(--panel-border);
   border-radius: 16px;
-  background: linear-gradient(135deg, #153878 0%, #1d4fa8 60%, #2b66cb 100%);
-  color: #f7faff;
+  background: linear-gradient(135deg, var(--header-grad-a) 0%, var(--header-grad-b) 60%, var(--header-grad-c) 100%);
+  color: var(--header-text);
   box-shadow: 0 18px 30px -26px rgba(15, 26, 53, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .dashboard-header h1 {
@@ -25,7 +29,7 @@
 
 .dashboard-header p {
   margin: 8px 0 0;
-  color: #dce8ff;
+  color: var(--header-subtle);
 }
 
 .dashboard-content {
@@ -82,29 +86,29 @@
 }
 
 input {
-  border: 1px solid #b9c8ea;
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   padding: 9px 11px;
-  background: #fff;
+  background: var(--control-bg);
   color: var(--text);
 }
 
 input:focus {
-  outline: 2px solid #bfd0fb;
-  border-color: #6e90e0;
+  outline: 2px solid var(--control-focus);
+  border-color: var(--accent);
 }
 
 .btn {
   border-radius: 10px;
-  border: 1px solid #b9c8ea;
+  border: 1px solid var(--control-border);
   padding: 9px 12px;
   cursor: pointer;
-  background: #fff;
+  background: var(--control-bg);
   color: var(--text);
 }
 
 .btn:hover:not(:disabled) {
-  background: #f5f8ff;
+  background: var(--control-hover);
 }
 
 .btn:disabled {
@@ -145,7 +149,7 @@ input:focus {
 
 .list-item {
   border: 1px solid var(--panel-border);
-  background: #fbfdff;
+  background: var(--list-item-bg);
   border-radius: 10px;
   padding: 10px;
 }
@@ -195,6 +199,11 @@ input:focus {
     padding: 16px 12px 22px;
   }
 
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .stat-grid {
     grid-template-columns: 1fr;
   }
@@ -202,4 +211,42 @@ input:focus {
   .item-row {
     grid-template-columns: 1fr;
   }
+}
+
+.schedule-combo {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--control-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--control-bg);
+}
+
+.schedule-main-btn {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--control-border);
+}
+
+.schedule-inline-select {
+  border: none;
+  border-radius: 0;
+  padding: 0 10px;
+  background: var(--control-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.schedule-inline-select:focus {
+  outline: none;
+}
+
+.btn-theme-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }

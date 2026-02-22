@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 
 from app.models import ScanRun
@@ -24,8 +25,32 @@ def mark_scan_run_status(scan_run_id: int, status: str) -> None:
         session.add(scan_run)
         session.commit()
 
+def enqueue_due_scheduled_runs() -> None:
+    now = datetime.now(timezone.utc)
+    with Session(engine) as session:
+        scheduled_runs = session.exec(
+            select(ScanRun).where(
+                ScanRun.is_scheduled == True,
+                ScanRun.next_run_time != None,
+                ScanRun.next_run_time <= now,
+                ScanRun.status.notin_(("queued", "running")),
+            )
+        ).all()
+
+        if not scheduled_runs:
+            return
+
+        for scan_run in scheduled_runs:
+            scan_run.status = "queued"
+            wait_minutes = scan_run.waiting_minutes or 60
+            scan_run.next_run_time = now + timedelta(minutes=wait_minutes)
+            session.add(scan_run)
+
+        session.commit()
+
 def worker_loop():
     while True:
+        enqueue_due_scheduled_runs()
         # Finding the next target in queue
         next_target = get_next_in_queue()
         # Start scanning

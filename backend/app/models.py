@@ -41,3 +41,7 @@ class ScanRun(SQLModel, table=True):
     target_id: int
     status: str = 'queued' # queued/running/success/failed
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # scheduler
+    is_scheduled: bool = False
+    waiting_minutes: Optional[int] = 60
+    next_run_time: Optional[datetime] = None

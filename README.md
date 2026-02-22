@@ -9,7 +9,7 @@
 - SQL DB: SQLite
 
 ### Frontend: React
-- TBH, I'm not good at front end, so Copilot/Codex know this part better than me.
+- Vibe coding, tbh.
 
 ### Scanning Tools
 - [subfinder](https://github.com/projectdiscovery/subfinder)
@@ -53,7 +53,21 @@ npm run dev
 
 ## Release notes 
 
-Version #2 (Feb 14th, 2026)
+### Version #3 (Feb 22nd, 2026)
+
+New Light/Dark mode switch.
+![main](/img/v3_main.png)
+
+Shows scanning status.
+![scan](/img/v3_scan_status.png)
+
+Set scheduled scan.
+![scan](/img/v3_schedule.png)
+
+Shows subdomain titles.
+![title](/img/v3_target_title.png)
+
+### Version #2 (Feb 14th, 2026)
 
 Dashboard main page.
 ![main](/img/v2_main.png)
@@ -61,7 +75,7 @@ Dashboard main page.
 Target page with more details.
 ![target](/img/v2_target.png)
 
-Version #1 (Feb 1st, 2026)
+### Version #1 (Feb 1st, 2026)
 
 Main page where you can add your favorite targets.
 ![main](/img/v1_main.png)

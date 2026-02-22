@@ -260,7 +260,20 @@ const TargetDetails = () => {
                     ) : (
                       <div className="item-row">
                         <div>
-                          <div className="item-title">{subdomain.url}</div>
+                          <div>
+                            {isValidUrl(subdomain.url) ? (
+                              <a
+                                className="item-title"
+                                href={subdomain.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {subdomain.url}
+                              </a>
+                            ) : (
+                              <span className="item-title">{subdomain.url}</span>
+                            )}
+                          </div>
                           <div className="item-meta">
                             {subdomain.title || "Untitled"} |{" "}
                             {subdomain.status || "unknown"}
