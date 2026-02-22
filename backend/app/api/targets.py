@@ -16,10 +16,44 @@ router = APIRouter(
 async def read_all_targets(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100
-) -> list[Target]:
+) -> list[dict]:
     with Session(engine) as session:
         targets = session.exec(select(Target).offset(offset).limit(limit)).all()
-        return list(targets)
+        target_list = list(targets)
+        if not target_list:
+            return []
+
+        target_ids = [t.id for t in target_list if t.id is not None]
+        scan_runs = session.exec(
+            select(ScanRun).where(ScanRun.target_id.in_(target_ids))
+        ).all()
+        scan_run_by_target = {scan_run.target_id: scan_run for scan_run in scan_runs}
+
+        return [
+            {
+                **target.model_dump(),
+                "scan_status": (
+                    scan_run_by_target[target.id].status
+                    if scan_run_by_target.get(target.id)
+                    else None
+                ),
+                "is_scheduled": bool(
+                    scan_run_by_target.get(target.id)
+                    and scan_run_by_target[target.id].is_scheduled
+                ),
+                "waiting_minutes": (
+                    scan_run_by_target[target.id].waiting_minutes
+                    if scan_run_by_target.get(target.id)
+                    else None
+                ),
+                "next_run_time": (
+                    scan_run_by_target[target.id].next_run_time
+                    if scan_run_by_target.get(target.id)
+                    else None
+                ),
+            }
+            for target in target_list
+        ]
 
 
 @router.get("/{target_id}")
