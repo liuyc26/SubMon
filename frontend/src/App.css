@@ -203,3 +203,31 @@ input:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.schedule-combo {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #b9c8ea;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.schedule-main-btn {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid #b9c8ea;
+}
+
+.schedule-inline-select {
+  border: none;
+  border-radius: 0;
+  padding: 0 10px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.schedule-inline-select:focus {
+  outline: none;
+}

@@ -14,14 +14,31 @@ const TargetList = () => {
   const [editError, setEditError] = useState(null);
   const [scanError, setScanError] = useState(null);
   const [scanMessage, setScanMessage] = useState(null);
-  const [lockedScanTargets, setLockedScanTargets] = useState({});
+  const [schedulingId, setSchedulingId] = useState(null);
+  const [scheduledTargets, setScheduledTargets] = useState({});
+  const [scheduleMinutesByTarget, setScheduleMinutesByTarget] = useState({});
+  const [scheduleError, setScheduleError] = useState(null);
+  const [scheduleMessage, setScheduleMessage] = useState(null);
 
   const navigate = useNavigate();
 
   const fetchTargets = async () => {
     try {
       const response = await api.get("/api/v1/targets");
-      setTargets(response.data);
+      const targetRows = response.data;
+      setTargets(targetRows);
+
+      const scheduledMap = {};
+      const minutesMap = {};
+      for (const target of targetRows) {
+        if (!target?.id) continue;
+        scheduledMap[target.id] = Boolean(target.is_scheduled);
+        if (target.waiting_minutes) {
+          minutesMap[target.id] = target.waiting_minutes;
+        }
+      }
+      setScheduledTargets(scheduledMap);
+      setScheduleMinutesByTarget((prev) => ({ ...prev, ...minutesMap }));
     } catch (error) {
       console.error("Error fetching targets", error);
     }
@@ -88,7 +105,9 @@ const TargetList = () => {
     try {
       setScanningId(target.id);
       await api.post(`/api/v1/targets/${target.id}/scan`);
-      setLockedScanTargets((prev) => ({ ...prev, [target.id]: true }));
+      setTargets((prev) =>
+        prev.map((t) => (t.id === target.id ? { ...t, scan_status: "queued" } : t))
+      );
       setScanMessage(`Scan queued for ${target.name}`);
     } catch (error) {
       console.error("Error queueing scan", error);
@@ -97,6 +116,75 @@ const TargetList = () => {
       );
     } finally {
       setScanningId(null);
+    }
+  };
+
+  const toggleSchedule = async (target) => {
+    if (!target?.id) return;
+    const isScheduled = Boolean(scheduledTargets[target.id]);
+    const waitingMinutes =
+      scheduleMinutesByTarget[target.id] ?? target.waiting_minutes ?? 60;
+    const currentWaitingMinutes = target.waiting_minutes ?? 60;
+    const shouldUnschedule = isScheduled && waitingMinutes === currentWaitingMinutes;
+    setScheduleError(null);
+    setScheduleMessage(null);
+
+    try {
+      setSchedulingId(target.id);
+      if (shouldUnschedule) {
+        const resp = await api.patch(`/api/v1/targets/${target.id}/schedule`, null, {
+          params: { enabled: false },
+        });
+        setScheduledTargets((prev) => ({ ...prev, [target.id]: false }));
+        setTargets((prev) =>
+          prev.map((t) =>
+            t.id === target.id
+              ? {
+                  ...t,
+                  is_scheduled: false,
+                  next_run_time: resp?.data?.next_run_time ?? null,
+                }
+              : t
+          )
+        );
+        setScheduleMessage(`Schedule disabled for ${target.name}`);
+      } else {
+        const resp = await api.patch(`/api/v1/targets/${target.id}/schedule`, null, {
+          params: { enabled: true, waiting_minutes: waitingMinutes },
+        });
+        const nextRunTime = resp?.data?.next_run_time ?? null;
+        setScheduledTargets((prev) => ({ ...prev, [target.id]: true }));
+        setTargets((prev) =>
+          prev.map((t) =>
+            t.id === target.id && t.scan_status !== "running"
+              ? {
+                  ...t,
+                  is_scheduled: true,
+                  waiting_minutes: waitingMinutes,
+                  next_run_time: nextRunTime,
+                  scan_status: "queued",
+                }
+              : t.id === target.id
+                ? {
+                    ...t,
+                    is_scheduled: true,
+                    waiting_minutes: waitingMinutes,
+                    next_run_time: nextRunTime,
+                  }
+              : t
+          )
+        );
+        setScheduleMessage(
+          `Scheduled ${target.name} every ${waitingMinutes} minute${waitingMinutes === 1 ? "" : "s"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error updating schedule", error);
+      setScheduleError(
+        error?.response?.data?.detail || error.message || "Failed to update schedule"
+      );
+    } finally {
+      setSchedulingId(null);
     }
   };
 
@@ -205,15 +293,68 @@ const TargetList = () => {
                         disabled={
                           !target.id ||
                           scanningId === target.id ||
-                          Boolean(lockedScanTargets[target.id])
+                          target.scan_status === "queued" ||
+                          target.scan_status === "running"
                         }
                       >
                         {scanningId === target.id
                           ? "Submitting..."
-                          : lockedScanTargets[target.id]
-                            ? "Scan Locked"
+                          : target.scan_status === "queued"
+                            ? "Queued"
+                          : target.scan_status === "running"
+                            ? "Scanning"
                             : "Scan"}
                       </button>
+                      <div className="schedule-combo">
+                        {(() => {
+                          const selectedMinutes =
+                            scheduleMinutesByTarget[target.id] ??
+                            target.waiting_minutes ??
+                            60;
+                          const currentMinutes = target.waiting_minutes ?? 60;
+                          const showUnschedule =
+                            Boolean(scheduledTargets[target.id]) &&
+                            selectedMinutes === currentMinutes;
+                          const nextRunLabel =
+                            target.next_run_time
+                              ? `Next run: ${new Date(target.next_run_time).toLocaleString("en-US", { timeZone: "UTC" })} UTC`
+                              : "No next run set";
+                          return (
+                        <button
+                          className="btn schedule-main-btn"
+                          onClick={() => toggleSchedule(target)}
+                          disabled={!target.id || schedulingId === target.id}
+                          title={nextRunLabel}
+                        >
+                          {schedulingId === target.id
+                            ? "Applying..."
+                            : showUnschedule
+                              ? "Unschedule"
+                              : "Schedule"}
+                        </button>
+                          );
+                        })()}
+                        <select
+                          className="schedule-inline-select"
+                          value={scheduleMinutesByTarget[target.id] ?? 60}
+                          onChange={(e) =>
+                            setScheduleMinutesByTarget((prev) => ({
+                              ...prev,
+                              [target.id]: Number.parseInt(e.target.value, 10),
+                            }))
+                          }
+                          disabled={!target.id || schedulingId === target.id}
+                        >
+                          <option value={5}>5m</option>
+                          <option value={15}>15m</option>
+                          <option value={30}>30m</option>
+                          <option value={60}>1h</option>
+                          <option value={120}>2h</option>
+                          <option value={360}>6h</option>
+                          <option value={720}>12h</option>
+                          <option value={1440}>24h</option>
+                        </select>
+                      </div>
                       <button
                         className="btn"
                         onClick={() => {
@@ -243,6 +384,12 @@ const TargetList = () => {
         {scanError && <div className="status-text status-error">{scanError}</div>}
         {scanMessage && (
           <div className="status-text status-success">{scanMessage}</div>
+        )}
+        {scheduleError && (
+          <div className="status-text status-error">{scheduleError}</div>
+        )}
+        {scheduleMessage && (
+          <div className="status-text status-success">{scheduleMessage}</div>
         )}
       </div>
     </section>
