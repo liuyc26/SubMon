@@ -26,9 +26,10 @@ go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
 go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 
-# Add GOPATH/bin to PATH
+# add GOPATH/bin to PATH
 export PATH=$PATH:$(go env GOPATH)/bin
-source ~/.zshrc  # or ~/.bashrc
+# save the above command to `~/.bashrc`
+source ~/.bashrc  # or ~/.zshrc
 ```
 
 ```py
@@ -38,16 +39,21 @@ discord_webhook_url: str = "YOUR-DISCORD-WEBHOOK"
 ```
 
 ```sh
+# create a virtual env
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
 # run fastapi service
 python -m app.main
 
 # run worker in a new terminal
-python -m app.worker
+python -m app.services.worker
 
-# Swagger doc
+# check Swagger doc
 http://localhost:8000/docs
 
-# ReDoc
+# check ReDoc
 http://localhost:8000/redoc
 ```
 

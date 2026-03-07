@@ -3,6 +3,8 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../api.js";
 import SubdomainForm from "./SubdomainForm.jsx";
 
+const PAGE_SIZE_OPTIONS = [20, 50, 100];
+
 const TargetDetails = () => {
   const { targetName } = useParams();
   const location = useLocation();
@@ -23,6 +25,9 @@ const TargetDetails = () => {
   const [deleteErrorId, setDeleteErrorId] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [subdomainsPerPage, setSubdomainsPerPage] = useState(PAGE_SIZE_OPTIONS[0]);
 
   const isValidUrl = (str) => {
     try {
@@ -89,12 +94,30 @@ const TargetDetails = () => {
     return { total, alive, missing };
   }, [subdomains]);
 
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(subdomains.length / subdomainsPerPage)),
+    [subdomains.length, subdomainsPerPage]
+  );
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const paginatedSubdomains = useMemo(() => {
+    const start = (currentPage - 1) * subdomainsPerPage;
+    return subdomains.slice(start, start + subdomainsPerPage);
+  }, [subdomains, currentPage, subdomainsPerPage]);
+
+  const pageStart = subdomains.length === 0 ? 0 : (currentPage - 1) * subdomainsPerPage + 1;
+  const pageEnd = Math.min(currentPage * subdomainsPerPage, subdomains.length);
+
   const startEdit = (subdomain) => {
     setEditingId(subdomain.id);
     setEditUrl(subdomain.url || "");
     setEditTitle(subdomain.title || "");
     setEditStatus(subdomain.status || "");
     setEditError(null);
+    setConfirmDeleteId(null);
   };
 
   const cancelEdit = () => {
@@ -103,6 +126,7 @@ const TargetDetails = () => {
     setEditTitle("");
     setEditStatus("");
     setEditError(null);
+    setConfirmDeleteId(null);
   };
 
   const saveEdit = async (id) => {
@@ -131,19 +155,49 @@ const TargetDetails = () => {
 
   const deleteSubdomain = async (id) => {
     if (!targetId) return setDeleteError("Missing target id");
-    if (!window.confirm("Are you sure you want to delete this subdomain?")) return;
     setDeleteErrorId(id);
     setDeleteError(null);
     try {
       await api.delete(`/api/v1/targets/${targetId}/subdomains/${id}`);
       setSubdomains((prev) => prev.filter((s) => s.id !== id));
       setSuccess("Subdomain deleted");
+      setConfirmDeleteId(null);
     } catch (err) {
       console.error("Error deleting subdomain", err);
       setDeleteError(err?.response?.data?.detail || err.message || "Failed to delete");
     } finally {
       setDeleteErrorId(null);
     }
+  };
+
+  const renderDeleteControl = (id, disabled = false) => (
+    <div className="delete-action">
+      <button
+        className="btn btn-danger"
+        onClick={() => setConfirmDeleteId((prev) => (prev === id ? null : id))}
+        disabled={disabled || deleteErrorId === id}
+      >
+        {deleteErrorId === id ? "Deleting..." : "Delete"}
+      </button>
+      {confirmDeleteId === id && deleteErrorId !== id && (
+        <div className="delete-confirm-box">
+          <span className="delete-confirm-label">Delete?</span>
+          <button className="btn btn-danger btn-compact" onClick={() => deleteSubdomain(id)}>
+            Yes
+          </button>
+          <button className="btn btn-compact" onClick={() => setConfirmDeleteId(null)}>
+            No
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const changePageSize = (nextPageSize) => {
+    const firstVisibleIndex = (currentPage - 1) * subdomainsPerPage;
+    const nextPage = Math.floor(firstVisibleIndex / nextPageSize) + 1;
+    setSubdomainsPerPage(nextPageSize);
+    setCurrentPage(nextPage);
   };
 
   return (
@@ -203,7 +257,10 @@ const TargetDetails = () => {
 
           <SubdomainForm
             targetId={targetId}
-            onCreated={(subdomain) => setSubdomains((prev) => [...prev, subdomain])}
+            onCreated={(subdomain) => {
+              setSubdomains((prev) => [subdomain, ...prev]);
+              setCurrentPage(1);
+            }}
           />
 
           <div className="dashboard-card">
@@ -214,8 +271,47 @@ const TargetDetails = () => {
             {subdomains.length === 0 ? (
               <p className="dashboard-subtle">No subdomains found.</p>
             ) : (
-              <ul className="list">
-                {subdomains.map((subdomain) => (
+              <>
+                <div className="pagination-row">
+                  <p className="dashboard-subtle">
+                    Showing {pageStart}-{pageEnd} of {subdomains.length}
+                  </p>
+                  <div className="pagination-controls">
+                    <label className="dashboard-subtle pagination-size-label">
+                      Per page
+                      <select
+                        className="pagination-size-select"
+                        value={subdomainsPerPage}
+                        onChange={(e) => changePageSize(Number(e.target.value))}
+                      >
+                        {PAGE_SIZE_OPTIONS.map((size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      className="btn"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="dashboard-subtle">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      className="btn"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+                <ul className="list">
+                  {paginatedSubdomains.map((subdomain) => (
                   <li key={subdomain.id} className="list-item">
                     {editingId === subdomain.id ? (
                       <div className="form-row">
@@ -249,13 +345,7 @@ const TargetDetails = () => {
                         >
                           Cancel
                         </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => deleteSubdomain(subdomain.id)}
-                          disabled={savingEditId === subdomain.id}
-                        >
-                          {deleteErrorId === subdomain.id ? "Deleting..." : "Delete"}
-                        </button>
+                        {renderDeleteControl(subdomain.id, savingEditId === subdomain.id)}
                       </div>
                     ) : (
                       <div className="item-row">
@@ -283,19 +373,14 @@ const TargetDetails = () => {
                           <button className="btn" onClick={() => startEdit(subdomain)}>
                             Edit
                           </button>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => deleteSubdomain(subdomain.id)}
-                            disabled={deleteErrorId === subdomain.id}
-                          >
-                            {deleteErrorId === subdomain.id ? "Deleting..." : "Delete"}
-                          </button>
+                          {renderDeleteControl(subdomain.id)}
                         </div>
                       </div>
                     )}
                   </li>
-                ))}
-              </ul>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         </>

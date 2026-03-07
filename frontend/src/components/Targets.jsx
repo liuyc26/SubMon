@@ -19,6 +19,8 @@ const TargetList = () => {
   const [scheduleMinutesByTarget, setScheduleMinutesByTarget] = useState({});
   const [scheduleError, setScheduleError] = useState(null);
   const [scheduleMessage, setScheduleMessage] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -56,18 +58,44 @@ const TargetList = () => {
 
   const deleteTarget = async (id) => {
     if (!id) return;
-    if (!window.confirm("Are you sure you want to delete this target?")) return;
+    setDeleteError(null);
     try {
       setDeletingId(id);
       await api.delete(`/api/v1/targets/${id}`);
       setTargets((prev) => prev.filter((t) => t.id !== id));
+      setConfirmDeleteId(null);
     } catch (error) {
       console.error("Error deleting target", error);
-      alert("Failed to delete target");
+      setDeleteError(
+        error?.response?.data?.detail || error.message || "Failed to delete target"
+      );
     } finally {
       setDeletingId(null);
     }
   };
+
+  const renderDeleteControl = (id, disabled = false) => (
+    <div className="delete-action">
+      <button
+        className="btn btn-danger"
+        onClick={() => setConfirmDeleteId((prev) => (prev === id ? null : id))}
+        disabled={!id || disabled || deletingId === id}
+      >
+        {deletingId === id ? "Deleting..." : "Delete"}
+      </button>
+      {confirmDeleteId === id && deletingId !== id && (
+        <div className="delete-confirm-box">
+          <span className="delete-confirm-label">Delete?</span>
+          <button className="btn btn-danger btn-compact" onClick={() => deleteTarget(id)}>
+            Yes
+          </button>
+          <button className="btn btn-compact" onClick={() => setConfirmDeleteId(null)}>
+            No
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   const saveEdit = async (id) => {
     if (!id) return;
@@ -257,18 +285,13 @@ const TargetList = () => {
                       onClick={() => {
                         setEditingId(null);
                         setEditError(null);
+                        setConfirmDeleteId(null);
                       }}
                       disabled={savingId === target.id}
                     >
                       Cancel
                     </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => deleteTarget(target.id)}
-                      disabled={!target.id || deletingId === target.id}
-                    >
-                      {deletingId === target.id ? "Deleting..." : "Delete"}
-                    </button>
+                    {renderDeleteControl(target.id, savingId === target.id)}
                   </div>
                 ) : (
                   <div className="item-row">
@@ -362,17 +385,12 @@ const TargetList = () => {
                           setEditName(target.name);
                           setEditUrl(target.url);
                           setEditError(null);
+                          setConfirmDeleteId(null);
                         }}
                       >
                         Edit
                       </button>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => deleteTarget(target.id)}
-                        disabled={!target.id || deletingId === target.id}
-                      >
-                        {deletingId === target.id ? "Deleting..." : "Delete"}
-                      </button>
+                      {renderDeleteControl(target.id)}
                     </div>
                   </div>
                 )}
@@ -382,6 +400,7 @@ const TargetList = () => {
         )}
         {editError && <div className="status-text status-error">{editError}</div>}
         {scanError && <div className="status-text status-error">{scanError}</div>}
+        {deleteError && <div className="status-text status-error">{deleteError}</div>}
         {scanMessage && (
           <div className="status-text status-success">{scanMessage}</div>
         )}
