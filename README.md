@@ -9,7 +9,7 @@
 - SQL DB: SQLite
 
 ### Frontend: React
-- Vibe coding, tbh.
+- ~~Vite~~Vibe coding.
 
 ### Scanning Tools
 - [subfinder](https://github.com/projectdiscovery/subfinder)
@@ -17,6 +17,8 @@
 - [httpx](https://github.com/projectdiscovery/httpx)
 
 ## Try It Yourself
+
+### `cd backend`
 
 ```sh
 # install tools
@@ -37,7 +39,6 @@ discord_webhook_url: str = "YOUR-DISCORD-WEBHOOK"
 
 ```sh
 # run fastapi service
-cd backend
 python -m app.main
 
 # run worker in a new terminal
@@ -50,42 +51,44 @@ http://localhost:8000/docs
 http://localhost:8000/redoc
 ```
 
+### `cd frontend`
+
 ```sh
 # run frontend
-cd frontend
 npm i
 npm install node
 npm run dev
 ```
 
-## Release notes 
+## How It Works
 
-### Version #3 (Feb 22nd, 2026)
+```mermaid
+flowchart TD
+    U[User / Frontend] -->|POST /targets/target_id/scan| A[FastAPI API]
+    U -->|PATCH /targets/target_id/schedule| A
 
-New Light/Dark mode switch.
-![main](/img/v3_main.png)
+    A -->|Create or update ScanRun = queued| DB[(SQLite)]
+    W[Worker Loop] -->|Poll queued jobs + enqueue due schedules| DB
+    W -->|Pick next queued ScanRun| S[Scanner Pipeline]
 
-Shows scanning status.
-![scan](/img/v3_scan_status.png)
+    S --> SF[subfinder]
+    SF --> DX[dnsx]
+    DX --> HX[httpx -json -title]
+    HX --> D[Diff with existing subdomains]
 
-Set scheduled scan.
-![scan](/img/v3_schedule.png)
+    D -->|Insert new + title + status=alive| DB
+    D -->|Mark missing status=missing| DB
+    D -->|Send new findings| DIS[Discord Webhook]
 
-Shows subdomain titles.
-![title](/img/v3_target_title.png)
+    S -->|success / failed| W
+    W -->|Update ScanRun status| DB
+```
 
-### Version #2 (Feb 14th, 2026)
+1. Frontend triggers scan or schedule endpoints.
+2. API stores state in `ScanRun` (`queued`, `running`, `success`, `failed`).
+3. Worker loops through queued and scheduled jobs.
+4. Scanner runs `subfinder -> dnsx -> httpx`, diffs results, updates DB, and sends Discord alerts for new subdomains.
 
-Dashboard main page.
-![main](/img/v2_main.png)
+---
 
-Target page with more details.
-![target](/img/v2_target.png)
-
-### Version #1 (Feb 1st, 2026)
-
-Main page where you can add your favorite targets.
-![main](/img/v1_main.png)
-
-Target page where you can add subdomains.
-![target](/img/v1_target.png)
+- [Release notes](/release-notes.md)
