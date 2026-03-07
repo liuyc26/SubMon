@@ -23,6 +23,10 @@
 go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
 go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+
+# Add GOPATH/bin to PATH
+export PATH=$PATH:$(go env GOPATH)/bin
+source ~/.zshrc  # or ~/.bashrc
 ```
 
 ```py
@@ -35,6 +39,7 @@ discord_webhook_url: str = "YOUR-DISCORD-WEBHOOK"
 # run fastapi service
 cd backend
 python -m app.main
+
 # run worker in a new terminal
 python -m app.worker
 
@@ -48,6 +53,8 @@ http://localhost:8000/redoc
 ```sh
 # run frontend
 cd frontend
+npm i
+npm install node
 npm run dev
 ```
 
