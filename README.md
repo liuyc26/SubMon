@@ -76,8 +76,8 @@ flowchart TD
     DX --> HX[httpx]
     HX --> D[Diff with existing subdomains]
 
-    D -->|Insert new subdomain(s)| DB
-    D -->|Mark missing subdomain(s)| DB
+    D -->|Insert new subdomain| DB
+    D -->|Mark missing subdomain| DB
     D -->|Send new findings| DIS[Discord Webhook]
 
     S -->|success / failed| W
