@@ -9,7 +9,7 @@ from sqlmodel import Session, select, col
 
 from app.models import Target, Subdomain
 from app.database import engine
-from app.alert import send_discord_alert
+from app.services.alert import send_discord_alert
 from app.config import discord_webhook_url
 
 logger = logging.getLogger(__name__)
