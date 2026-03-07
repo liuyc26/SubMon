@@ -2,6 +2,19 @@
 
 > Some say bug bounty isn't just about finding bugs, but being the "first" to find them. I'm building this tool to notify hunters when new subdomains appear.
 
+## What Can It Do
+
+![dashboard](/img/v4_main.png)
+
+- You can add your favorite target: name + domain.
+- Then you can either `scan` or `schedule` a scan.
+- When it finishes, you will get a discord alert.
+
+![target page](/img/v4_target.png)
+
+- Here you can see result from the last scan: which subdomain is new, which is missing.
+- You will also see the title of that subdomain, but it might not be accurate.
+
 ## Tech Stack
 ### Backend: FastAPI
 - ORM: SQLModel
@@ -37,6 +50,7 @@ source ~/.bashrc  # or ~/.zshrc
 DB_NAME: str = "DB-NAME.db"
 discord_webhook_url: str = "YOUR-DISCORD-WEBHOOK"
 ```
+- [Making A Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=%C2%A0%20Facebook-,Making%20A%20Webhook,-With%20that%20in)
 
 ```sh
 # create a virtual env
