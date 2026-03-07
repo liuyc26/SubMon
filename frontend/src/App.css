@@ -177,6 +177,38 @@ input:focus {
   flex-wrap: wrap;
 }
 
+.delete-action {
+  position: relative;
+  display: inline-flex;
+}
+
+.delete-confirm-box {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 10px 24px -18px rgba(8, 18, 38, 0.95);
+  white-space: nowrap;
+}
+
+.delete-confirm-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.btn-compact {
+  padding: 6px 9px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
 .status-text {
   margin-top: 8px;
   font-size: 0.9rem;
@@ -192,6 +224,40 @@ input:focus {
 
 .status-warning {
   color: var(--warning);
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination-size-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-size-select {
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--control-bg);
+  color: var(--text);
+}
+
+.pagination-size-select:focus {
+  outline: 2px solid var(--control-focus);
+  border-color: var(--accent);
 }
 
 @media (max-width: 760px) {
@@ -210,6 +276,16 @@ input:focus {
 
   .item-row {
     grid-template-columns: 1fr;
+  }
+
+  .delete-confirm-box {
+    right: auto;
+    left: 0;
+  }
+
+  .pagination-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
