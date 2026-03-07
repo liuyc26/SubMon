@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
@@ -6,6 +7,13 @@ from app.models import ScanRun
 from app.database import engine
 
 from .scanner import run_scan
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 def get_next_in_queue() -> ScanRun | None:
     with Session(engine) as session:
@@ -63,7 +71,7 @@ def worker_loop():
             else:
                 mark_scan_run_status(scan_run_id=next_target.id, status="failed")
         else:
-            print("[-] No target in queue.")
+            logger.info("no target in queue")
             sleep(10)
         
 
