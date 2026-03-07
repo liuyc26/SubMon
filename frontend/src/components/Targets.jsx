@@ -217,11 +217,18 @@ const TargetList = () => {
   };
 
   const stats = useMemo(() => {
-    const total = targets.length;
-    const withUrl = targets.filter((t) => t.url).length;
-    const withoutUrl = total - withUrl;
-    return { total, withUrl, withoutUrl };
-  }, [targets]);
+    const scheduled = targets.filter((t) =>
+      Boolean(scheduledTargets[t.id] ?? t.is_scheduled)
+    ).length;
+    const activeScans = targets.filter((t) =>
+      ["queued", "running"].includes((t.scan_status ?? "").toLowerCase())
+    ).length;
+    const nextRunsSet = targets.filter((t) => {
+      const isScheduled = Boolean(scheduledTargets[t.id] ?? t.is_scheduled);
+      return isScheduled && Boolean(t.next_run_time);
+    }).length;
+    return { scheduled, activeScans, nextRunsSet };
+  }, [targets, scheduledTargets]);
 
   useEffect(() => {
     fetchTargets();
@@ -232,16 +239,16 @@ const TargetList = () => {
       <div className="dashboard-card">
         <div className="stat-grid">
           <div className="stat-tile">
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total targets</div>
+            <div className="stat-value">{stats.scheduled}</div>
+            <div className="stat-label">Scheduled targets</div>
           </div>
           <div className="stat-tile">
-            <div className="stat-value">{stats.withUrl}</div>
-            <div className="stat-label">With URL</div>
+            <div className="stat-value">{stats.activeScans}</div>
+            <div className="stat-label">Active scans</div>
           </div>
           <div className="stat-tile">
-            <div className="stat-value">{stats.withoutUrl}</div>
-            <div className="stat-label">Without URL</div>
+            <div className="stat-value">{stats.nextRunsSet}</div>
+            <div className="stat-label">Next run scheduled</div>
           </div>
         </div>
       </div>
