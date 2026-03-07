@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import create_db_and_tables
-from app.api import targets, subdomains
+from app.api import targets, subdomains, scan, schedule
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +35,8 @@ def health_check() -> dict:
 
 app.include_router(targets.router)
 app.include_router(subdomains.router)
+app.include_router(scan.router)
+app.include_router(schedule.router)
 
 
 if __name__ == "__main__":

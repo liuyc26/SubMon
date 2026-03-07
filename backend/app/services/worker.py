@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from app.models import ScanRun
 from app.database import engine
 
-from .scanner import run_scan
+from app.services.scanner import run_scan
 
 logging.basicConfig(
     level=logging.INFO,
