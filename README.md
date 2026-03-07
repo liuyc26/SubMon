@@ -64,8 +64,8 @@ npm run dev
 
 ```mermaid
 flowchart TD
-    U[User / Frontend] -->|POST /targets/target_id/scan| A[FastAPI API]
-    U -->|PATCH /targets/target_id/schedule| A
+    U[User / Frontend] -->|Scan Target| A[FastAPI Backend]
+    U -->|Schedule Scan| A
 
     A -->|Create or update ScanRun = queued| DB[(SQLite)]
     W[Worker Loop] -->|Poll queued jobs + enqueue due schedules| DB
@@ -73,11 +73,11 @@ flowchart TD
 
     S --> SF[subfinder]
     SF --> DX[dnsx]
-    DX --> HX[httpx -json -title]
+    DX --> HX[httpx]
     HX --> D[Diff with existing subdomains]
 
-    D -->|Insert new + title + status=alive| DB
-    D -->|Mark missing status=missing| DB
+    D -->|Insert new subdomain(s)| DB
+    D -->|Mark missing subdomain(s)| DB
     D -->|Send new findings| DIS[Discord Webhook]
 
     S -->|success / failed| W
