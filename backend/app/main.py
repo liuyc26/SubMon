@@ -1,4 +1,5 @@
 import logging
+import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +16,7 @@ app = FastAPI()
 
 # CORS
 origins = [
-    "http://localhost:5173" # frontend port
+    os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 ]
 
 app.add_middleware(

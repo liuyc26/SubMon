@@ -31,6 +31,28 @@
 
 ## Try It Yourself
 
+### Docker Compose (recommended)
+
+From the project root:
+
+```sh
+# optional: create env file and set Discord webhook for alerts
+cp .env.example .env
+# then edit .env and set DISCORD_WEBHOOK_URL
+
+# build and start frontend + backend + worker
+docker compose up --build -d
+```
+
+Open:
+- Frontend: `http://localhost:5173`
+- API docs: `http://localhost:8000/docs`
+
+```sh
+# stop services
+docker compose down
+```
+
 ### `cd backend`
 
 ```sh
@@ -45,10 +67,10 @@ export PATH=$PATH:$(go env GOPATH)/bin
 source ~/.bashrc  # or ~/.zshrc
 ```
 
-```py
-# add config.py in backend/app/
-DB_NAME: str = "DB-NAME.db"
-discord_webhook_url: str = "YOUR-DISCORD-WEBHOOK"
+```sh
+# optional env vars for backend
+export DB_NAME="database.db"
+export DISCORD_WEBHOOK_URL="YOUR-DISCORD-WEBHOOK"
 ```
 - [Making A Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=%C2%A0%20Facebook-,Making%20A%20Webhook,-With%20that%20in)
 

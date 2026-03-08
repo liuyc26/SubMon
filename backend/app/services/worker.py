@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 
 from app.models import ScanRun
-from app.database import engine
+from app.database import engine, create_db_and_tables
 
 from app.services.scanner import run_scan
 
@@ -76,4 +76,5 @@ def worker_loop():
         
 
 if __name__ == "__main__":
+    create_db_and_tables()
     worker_loop()
