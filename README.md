@@ -2,13 +2,14 @@
 
 > Some say bug bounty isn't just about finding bugs, but being the "first" to find them. I'm building this tool to notify hunters when new subdomains appear.
 
-## What Can It Do
+## Features
 
 ![dashboard](/img/v4_main.png)
 
 - You can add your favorite target: name + domain.
-- Then you can either `scan` or `schedule` a scan.
-- When it finishes, you will get a discord alert.
+- Then you can either click `scan` or `schedule` a scan.
+- When the scan finishes, you will get a discord alert.
+- If you set up the scheduler, you will get a discord notification every time it finds new subdomains.
 
 ![target page](/img/v4_target.png)
 
@@ -33,29 +34,7 @@
 
 - [Making A Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=%C2%A0%20Facebook-,Making%20A%20Webhook,-With%20that%20in)
 
-### Docker Compose (recommended)
-
-From the project root:
-
-```sh
-# optional: create env file and set Discord webhook for alerts
-cp .env.example .env
-# then edit .env and set DISCORD_WEBHOOK_URL
-
-# build and start frontend + backend + worker
-docker compose up --build -d
-```
-
-Open:
-- Frontend: `http://localhost:5173`
-- API docs: `http://localhost:8000/docs`
-
-```sh
-# stop services
-docker compose down
-```
-
-### Manual Install 
+### Manual Install
 
 #### `cd backend`
 
@@ -105,7 +84,29 @@ npm install node
 npm run dev
 ```
 
-## How It Works
+### Docker Compose (recommended)
+
+From the project root:
+
+```sh
+# optional: create env file and set Discord webhook for alerts
+cp .env.example .env
+# then edit .env and set DISCORD_WEBHOOK_URL
+
+# build and start frontend + backend + worker
+docker compose up --build -d
+```
+
+Open:
+- Frontend: `http://localhost:5173`
+- API docs: `http://localhost:8000/docs`
+
+```sh
+# stop services
+docker compose down
+```
+
+## Workflow
 
 ```mermaid
 flowchart TD
