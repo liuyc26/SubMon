@@ -22,7 +22,7 @@
 - SQL DB: SQLite
 
 ### Frontend: React
-- ~~Vite~~Vibe coding.
+- ~~Vite~~Vibe coding
 
 ### Scanning Tools
 - [subfinder](https://github.com/projectdiscovery/subfinder)
@@ -30,6 +30,8 @@
 - [httpx](https://github.com/projectdiscovery/httpx)
 
 ## Try It Yourself
+
+- [Making A Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=%C2%A0%20Facebook-,Making%20A%20Webhook,-With%20that%20in)
 
 ### Docker Compose (recommended)
 
@@ -53,7 +55,9 @@ Open:
 docker compose down
 ```
 
-### `cd backend`
+### Manual Install 
+
+#### `cd backend`
 
 ```sh
 # install tools
@@ -72,7 +76,6 @@ source ~/.bashrc  # or ~/.zshrc
 export DB_NAME="database.db"
 export DISCORD_WEBHOOK_URL="YOUR-DISCORD-WEBHOOK"
 ```
-- [Making A Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks#:~:text=%C2%A0%20Facebook-,Making%20A%20Webhook,-With%20that%20in)
 
 ```sh
 # create a virtual env
@@ -93,7 +96,7 @@ http://localhost:8000/docs
 http://localhost:8000/redoc
 ```
 
-### `cd frontend`
+#### `cd frontend`
 
 ```sh
 # run frontend

@@ -1,5 +1,11 @@
 ## Release notes 
 
+### Version #4 (Mar 7th, 2026)
+
+- Use multithreading in scanner, so it runs faster when scanning large target.
+- Some UI changes.
+- Dockerized it, so it's easier to run.
+
 ### Version #3 (Feb 22nd, 2026)
 
 New Light/Dark mode switch.
